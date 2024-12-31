@@ -1,0 +1,31 @@
+version: "3.8"
+services:
+  opensearch:
+    image: opensearchproject/opensearch:2.9.0
+    container_name: opensearch
+    environment:
+      - "discovery.type=single-node"
+      - "plugins.security.disabled=true"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"  # Exponiendo el puerto 9200 para que se pueda acceder desde fuera del contenedor
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data  # Persistir datos
+
+  api:
+    build:
+      context: .
+    container_name: api
+    environment:
+      FLASK_APP: app.py
+    ports:
+      - "5000:5000"  # Exponiendo el puerto 5000 de la API Flask
+    depends_on:
+      - opensearch  # Espera que opensearch esté listo antes de iniciar
+
+volumes:
+  opensearch-data:
+    driver: local
